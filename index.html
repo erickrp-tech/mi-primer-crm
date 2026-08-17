@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Echo Point - CRM con Modo Oscuro</title>
+    <style>
+        /* Configuración base de la página (Modo Claro) */
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-color: #ffffff;
+            color: #333333;
+            transition: background-color 0.4s, color 0.4s; /* Hace que el cambio de color sea suave */
+        }
+        
+        /* Efecto Marca de Agua */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://unsplash.com');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.12;
+            z-index: -1;
+            transition: opacity 0.4s;
+        }
+
+        /* 🌙 COLORES PARA EL MODO OSCURO 🌙 */
+        body.modo-oscuro {
+            background-color: #121212; /* Fondo negro oscuro */
+            color: #ffffff;            /* Texto blanco */
+        }
+
+        /* Cambios en la marca de agua en modo oscuro para que no deslumbre */
+        body.modo-oscuro::before {
+            opacity: 0.05; 
+        }
+
+        /* El contenedor del formulario en Modo Claro */
+        .contenedor-crm {
+            background-color: #ffffff; 
+            width: 100%;
+            max-width: 450px;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0, 34, 68, 0.15);
+            border-top: 8px solid #003366;
+            box-sizing: border-box;
+            transition: background-color 0.4s, box-shadow 0.4s;
+        }
+
+        /* El contenedor del formulario cambia en Modo Oscuro */
+        body.modo-oscuro .contenedor-crm {
+            background-color: #1e1e1e;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.5);
+            border-top: 8px solid #0055aa; /* Azul un poco más brillante para que resalte */
+        }
+
+        /* Textos y títulos */
+        .titulo-principal {
+            color: #002244;
+            font-size: 46px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            transition: color 0.4s;
+        }
+        body.modo-oscuro .titulo-principal { color: #4499ff; }
+
+        h2 { text-align: center; color: #003366; margin-top: 0; margin-bottom: 25px; transition: color 0.4s; }
+        body.modo-oscuro h2 { color: #4499ff; }
+
+        label { display: block; font-weight: bold; margin-bottom: 6px; color: #002244; font-size: 14px; transition: color 0.4s; }
+        body.modo-oscuro label { color: #a0c0ff; }
+        
+        /* Cajas de texto */
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border: 2px solid #b0c4de;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 15px;
+            outline: none;
+            background-color: #ffffff;
+            color: #333333;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s;
+        }
+        body.modo-oscuro input {
+            background-color: #2d2d2d;
+            border-color: #444444;
+            color: #ffffff;
+        }
+        input:focus { border-color: #004488; }
+        body.modo-oscuro input:focus { border-color: #4499ff; }
+
+        /* Botón de Enviar */
+        .boton-enviar {
+            width: 100%;
+            background-color: #004488;
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .boton-enviar:hover { background-color: #002244; }
+        body.modo-oscuro .boton-enviar { background-color: #0055aa; }
+        body.modo-oscuro .boton-enviar:hover { background-color: #004488; }
+
+        /* Botón flotante para activar el Modo Oscuro */
+        .boton-modo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #222222;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+            transition: background-color 0.4s, color 0.4s;
+        }
+        body.modo-oscuro .boton-modo {
+            background-color: #ffffff;
+            color: #222222;
+        }
+
+        /* Pantalla oculta del perfil */
+        .pantalla-cuenta {
+            display: none;
+            background-color: #e6f2ff;
+            border: 2px dashed #004488;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            transition: background-color 0.4s, border-color 0.4s;
+        }
+        body.modo-oscuro .pantalla-cuenta {
+            background-color: #1a2636;
+            border-color: #4499ff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botón para alternar los modos -->
+    <button class="boton-modo" onclick="alternarModo()" id="btnModo">🌙 Modo Oscuro</button>
+
+    <div class="titulo-principal">Echo Point CRM</div>
+
+    <div class="contenedor-crm">
+        <h2>Panel de Registro Seguro</h2>
+        
+        <form onsubmit="verificarAcceso(event)">
+            <label>Nombre del Titular:</label>
+            <input type="text" id="nombreCrm" placeholder="Ej. Carlos Mendoza" required>
+
+            <label>Número de Teléfono:</label>
+            <input type="text" id="telefonoCrm" placeholder="Ej. 5512345678" required>
+
+            <label>Fecha de Nacimiento:</label>
+            <input type="date" id="fechaCrm" required>
+
+            <label>Correo Electrónico:</label>
+            <input type="email" id="correoCrm" placeholder="carlos@correo.com" required>
+
+            <label>Clave de Acceso Secreta:</label>
+            <input type="password" id="claveCrm" placeholder="Escribe una contraseña" required>
+
+            <button type="submit" class="boton-enviar">Guardar y Validar Acceso</button>
+        </form>
+
+        <div class="pantalla-cuenta" id="seccionCuenta">
+            <h3 style="margin-top: 0;">🔒 Perfil de Usuario Verificado</h3>
+            <p><strong>Titular:</strong> <span id="verNombre"></span></p>
+            <p><strong>Contacto:</strong> <span id="verCorreo"></span></p>
+            <p><strong>Estado del Sistema:</strong> Conectado de forma segura</p>
+        </div>
+    </div>
+
+    <script>
+        // Función para cambiar entre modo claro y oscuro
+        function alternarModo() {
+            // Le añadimos o quitamos la clase "modo-oscuro" al cuerpo de la página
+            document.body.classList.toggle('modo-oscuro');
+            
+            var boton = document.getElementById('btnModo');
+            
+            // Cambiamos el texto del botón dependiendo del modo activo
+            if (document.body.classList.contains('modo-oscuro')) {
+                boton.innerText = "☀️ Modo Claro";
+            } else {
+                boton.innerText = "🌙 Modo Oscuro";
+            }
+        }
+
+        // Función de acceso que ya tenías
+        function verificarAcceso(evento) {
+            evento.preventDefault();
+            
+            var nombre = document.getElementById('nombreCrm').value;
+            var correo = document.getElementById('correoCrm').value;
+            var clave = document.getElementById('claveCrm').value;
+
+            if(clave.length < 4) {
+                alert("Por seguridad, tu clave debe tener al menos 4 caracteres.");
+                return;
+            }
+
+            document.getElementById('verNombre').innerText = nombre;
+            document.getElementById('verCorreo').innerText = correo;
+
+            alert("¡Clave correcta! Cargando la información del usuario...");
+            document.getElementById('seccionCuenta').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>
